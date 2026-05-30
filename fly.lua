@@ -1,4 +1,4 @@
--- NNNB 飞行脚本（手机版，默认摇杆移动）
+-- NNNB 飞行脚本（纯摇杆，无按钮，修复断触）
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hum = char:WaitForChild("Humanoid")
@@ -8,11 +8,9 @@ local uis = game:GetService("UserInputService")
 
 local flying = false
 local speed = 50
-local moveDirection = Vector3.zero
-local upHeld, downHeld = false, false
 
--- 摇杆读取
-local touchStartPos, touchCurrentPos, touchActive = nil, nil, false
+-- 摇杆数据（用多点触摸追踪，修复断触）
+local activeTouches = {}
 
 pcall(function() player.PlayerGui:FindFirstChild("NNBGui"):Destroy() end)
 
@@ -33,7 +31,7 @@ mainBtn.TextSize = 18
 mainBtn.ZIndex = 20
 Instance.new("UICorner", mainBtn).CornerRadius = UDim.new(1, 0)
 
--- ============ NN 按钮可拖动 ============
+-- NN 按钮可拖动
 local dragMain = false
 local dragStartPos, btnStartPos = nil, nil
 
@@ -55,16 +53,14 @@ uis.InputChanged:Connect(function(input)
     end
 end)
 
-uis.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragMain = false
-    end
+uis.TouchEnded:Connect(function(input)
+    dragMain = false
 end)
 
 -- ============ 弹出面板 ============
 local panel = Instance.new("Frame", gui)
-panel.Size = UDim2.new(0, 170, 0, 180)
-panel.Position = UDim2.new(0.5, -85, 0.5, -90)
+panel.Size = UDim2.new(0, 170, 0, 150)
+panel.Position = UDim2.new(0.5, -85, 0.5, -75)
 panel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 panel.BackgroundTransparency = 0.1
 panel.Visible = false
@@ -93,70 +89,69 @@ uis.InputChanged:Connect(function(input)
     end
 end)
 
-uis.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragPanel = false
-    end
+uis.TouchEnded:Connect(function(input)
+    dragPanel = false
 end)
 
--- ============ 标题 NNNB ============
+-- 标题 NNNB
 local title = Instance.new("TextLabel", panel)
-title.Size = UDim2.new(1, 0, 0, 30)
-title.Position = UDim2.new(0, 0, 0, 8)
+title.Size = UDim2.new(1, 0, 0, 35)
+title.Position = UDim2.new(0, 0, 0, 10)
 title.BackgroundTransparency = 1
 title.Text = "NNNB"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBlack
-title.TextSize = 20
+title.TextSize = 22
 title.ZIndex = 19
 
--- ============ 飞行按钮 ============
+-- 飞行按钮
 local flyBtn = Instance.new("TextButton", panel)
-flyBtn.Size = UDim2.new(0, 130, 0, 40)
-flyBtn.Position = UDim2.new(0.5, -65, 0, 50)
+flyBtn.Size = UDim2.new(0, 120, 0, 42)
+flyBtn.Position = UDim2.new(0.5, -60, 0, 55)
 flyBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
 flyBtn.Text = "飞行"
 flyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 flyBtn.Font = Enum.Font.GothamBlack
 flyBtn.TextSize = 18
 flyBtn.ZIndex = 19
-Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 20)
+Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 21)
 
--- ============ 速度显示 ============
+-- 速度显示
 local speedText = Instance.new("TextLabel", panel)
-speedText.Size = UDim2.new(0, 130, 0, 18)
-speedText.Position = UDim2.new(0.5, -65, 0, 100)
+speedText.Size = UDim2.new(0, 120, 0, 18)
+speedText.Position = UDim2.new(0.5, -60, 0, 105)
 speedText.BackgroundTransparency = 1
 speedText.Text = "速度：50"
 speedText.TextColor3 = Color3.fromRGB(200, 200, 200)
 speedText.Font = Enum.Font.Gotham
-speedText.TextSize = 11
+speedText.TextSize = 12
 speedText.TextXAlignment = Enum.TextXAlignment.Center
 speedText.ZIndex = 19
 
--- ============ 速度调节 ============
+-- 速度 -
 local speedDown = Instance.new("TextButton", panel)
-speedDown.Size = UDim2.new(0, 35, 0, 25)
-speedDown.Position = UDim2.new(0.5, -55, 0, 125)
+speedDown.Size = UDim2.new(0, 30, 0, 22)
+speedDown.Position = UDim2.new(0.5, -40, 0, 125)
 speedDown.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 speedDown.Text = "-"
-speedDown.TextSize = 16
+speedDown.TextSize = 14
 speedDown.ZIndex = 19
-Instance.new("UICorner", speedDown).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", speedDown).CornerRadius = UDim.new(0, 11)
 
+-- 速度 +
 local speedUp = Instance.new("TextButton", panel)
-speedUp.Size = UDim2.new(0, 35, 0, 25)
-speedUp.Position = UDim2.new(0.5, 20, 0, 125)
+speedUp.Size = UDim2.new(0, 30, 0, 22)
+speedUp.Position = UDim2.new(0.5, 10, 0, 125)
 speedUp.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 speedUp.Text = "+"
-speedUp.TextSize = 16
+speedUp.TextSize = 14
 speedUp.ZIndex = 19
-Instance.new("UICorner", speedUp).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", speedUp).CornerRadius = UDim.new(0, 11)
 
--- ============ 关闭按钮 ============
+-- 关闭按钮
 local closeBtn = Instance.new("TextButton", panel)
 closeBtn.Size = UDim2.new(0, 22, 0, 22)
-closeBtn.Position = UDim2.new(1, -28, 0, 8)
+closeBtn.Position = UDim2.new(1, -28, 0, 10)
 closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 closeBtn.Text = "✕"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -164,41 +159,18 @@ closeBtn.TextSize = 12
 closeBtn.ZIndex = 19
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
 
--- ============ 升降按钮（飞行时显示在右侧） ============
-local upBtn = Instance.new("TextButton", gui)
-upBtn.Size = UDim2.new(0, 50, 0, 50)
-upBtn.Position = UDim2.new(0.84, 0, 0.52, 0)
-upBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-upBtn.BackgroundTransparency = 0.3
-upBtn.Text = "⬆"
-upBtn.TextSize = 22
-upBtn.Visible = false
-upBtn.ZIndex = 18
-Instance.new("UICorner", upBtn).CornerRadius = UDim.new(1, 0)
-
-local downBtn = Instance.new("TextButton", gui)
-downBtn.Size = UDim2.new(0, 50, 0, 50)
-downBtn.Position = UDim2.new(0.84, 0, 0.67, 0)
-downBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-downBtn.BackgroundTransparency = 0.3
-downBtn.Text = "⬇"
-downBtn.TextSize = 22
-downBtn.Visible = false
-downBtn.ZIndex = 18
-Instance.new("UICorner", downBtn).CornerRadius = UDim.new(1, 0)
-
--- ============ 功能 ============
+-- ============ 功能函数 ============
 local function startFly()
     flying = true
     hum.PlatformStand = true
-    Instance.new("BodyGyro", root).MaxTorque = Vector3.new(1,1,1) * math.huge
-    root.BodyGyro.Name = "FlyGyro"
-    Instance.new("BodyVelocity", root).MaxForce = Vector3.new(1,1,1) * math.huge
-    root.BodyVelocity.Name = "FlyVelocity"
+    local bg = Instance.new("BodyGyro", root)
+    bg.Name = "FlyGyro"
+    bg.MaxTorque = Vector3.new(1,1,1) * math.huge
+    local bv = Instance.new("BodyVelocity", root)
+    bv.Name = "FlyVelocity"
+    bv.MaxForce = Vector3.new(1,1,1) * math.huge
     flyBtn.Text = "飞行中..."
     flyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    upBtn.Visible = true
-    downBtn.Visible = true
     panel.Visible = false
     mainBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 end
@@ -207,33 +179,27 @@ local function stopFly()
     flying = false
     hum.PlatformStand = false
     for _, n in ipairs({"FlyGyro", "FlyVelocity"}) do
-        if root:FindFirstChild(n) then root[n]:Destroy() end
+        local obj = root:FindFirstChild(n)
+        if obj then obj:Destroy() end
     end
     flyBtn.Text = "飞行"
     flyBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-    upBtn.Visible = false
-    downBtn.Visible = false
-    moveDirection = Vector3.zero
     mainBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    activeTouches = {}
 end
 
--- 点 NN 按钮打开面板
+-- 点 NN 按钮
 mainBtn.MouseButton1Click:Connect(function()
-    if not flying then
-        panel.Visible = not panel.Visible
-    else
-        -- 飞行中点 NN 直接关闭飞行
-        stopFly()
-    end
-end)
-
--- 点飞行按钮
-flyBtn.MouseButton1Click:Connect(function()
     if flying then
         stopFly()
     else
-        startFly()
+        panel.Visible = not panel.Visible
     end
+end)
+
+-- 飞行按钮
+flyBtn.MouseButton1Click:Connect(function()
+    if flying then stopFly() else startFly() end
 end)
 
 -- 关闭按钮
@@ -241,7 +207,7 @@ closeBtn.MouseButton1Click:Connect(function()
     panel.Visible = false
 end)
 
--- 速度调节
+-- 速度
 speedDown.MouseButton1Click:Connect(function()
     speed = math.max(5, speed - 5)
     speedText.Text = "速度："..speed
@@ -251,66 +217,62 @@ speedUp.MouseButton1Click:Connect(function()
     speedText.Text = "速度："..speed
 end)
 
--- 升降按钮
-upBtn.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch then upHeld = true end end)
-upBtn.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch then upHeld = false end end)
-downBtn.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch then downHeld = true end end)
-downBtn.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch then downHeld = false end end)
+-- ============ 多点触摸摇杆（修复断触） ============
+local screenWidth = workspace.CurrentCamera.ViewportSize.X
+local screenHalf = screenWidth / 2
 
--- ============ 读取游戏默认摇杆 ============
 uis.TouchStarted:Connect(function(touch, gameProcessed)
-    if touch.Position.X < workspace.CurrentCamera.ViewportSize.X / 2 then
-        touchStartPos = touch.Position
-        touchCurrentPos = touch.Position
-        touchActive = true
-    end
+    activeTouches[touch] = {
+        startPos = touch.Position,
+        currentPos = touch.Position,
+        isLeft = touch.Position.X < screenHalf
+    }
 end)
 
 uis.TouchMoved:Connect(function(touch, gameProcessed)
-    if touchActive and touchStartPos then
-        touchCurrentPos = touch.Position
+    if activeTouches[touch] then
+        activeTouches[touch].currentPos = touch.Position
     end
 end)
 
 uis.TouchEnded:Connect(function(touch, gameProcessed)
-    if touchActive then
-        touchActive = false
-        touchStartPos = nil
-        touchCurrentPos = nil
-        moveDirection = Vector3.zero
-    end
+    activeTouches[touch] = nil
 end)
 
 -- ============ 飞行循环 ============
 rs.RenderStepped:Connect(function()
     if not flying then return end
+    
     local bv = root:FindFirstChild("FlyVelocity")
     local bg = root:FindFirstChild("FlyGyro")
     if not bv or not bg then return end
     
     local cam = workspace.CurrentCamera
     
-    if touchActive and touchStartPos and touchCurrentPos then
-        local delta = touchCurrentPos - touchStartPos
-        if delta.Magnitude > 15 then
-            local clampedDelta = delta.Magnitude > 80 and delta.Unit * 80 or delta
-            local nx = clampedDelta.X / 80
-            local ny = clampedDelta.Y / 80
-            moveDirection = cam.CFrame.LookVector * (-ny) + cam.CFrame.RightVector * nx
-            if moveDirection.Magnitude > 1 then moveDirection = moveDirection.Unit end
-        else
-            moveDirection = Vector3.zero
+    -- 遍历所有活跃触摸，找左边的摇杆触摸
+    local moveDir = Vector3.zero
+    for _, data in pairs(activeTouches) do
+        if data.isLeft and data.startPos and data.currentPos then
+            local delta = data.currentPos - data.startPos
+            if delta.Magnitude > 15 then
+                local clamped = delta.Magnitude > 80 and delta.Unit * 80 or delta
+                local nx = clamped.X / 80  -- 左右
+                local ny = clamped.Y / 80  -- 上下
+                -- 水平移动
+                moveDir += cam.CFrame.RightVector * nx
+                -- 垂直移动（摇杆上推=上升，下推=下降）
+                moveDir += Vector3.new(0, 1, 0) * (-ny)
+            end
         end
     end
     
-    local vel = moveDirection * speed
-    if upHeld then vel += Vector3.new(0, speed, 0) end
-    if downHeld then vel -= Vector3.new(0, speed, 0) end
+    if moveDir.Magnitude > 1 then moveDir = moveDir.Unit end
     
-    bv.Velocity = vel
+    bv.Velocity = moveDir * speed
     bg.CFrame = cam.CFrame
 end)
 
+-- 重生
 player.CharacterAdded:Connect(function(c)
     char = c
     hum = c:WaitForChild("Humanoid")
