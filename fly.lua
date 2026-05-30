@@ -1,4 +1,4 @@
--- NNNB v1.0 多功能菜单
+-- NNNB v1.0 多功能菜单系统
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hum = char:WaitForChild("Humanoid")
@@ -20,8 +20,65 @@ pcall(function() player.PlayerGui:FindFirstChild("NNBGui"):Destroy() end)
 local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.Name = "NNBGui"
 gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- ============ NN 主按钮 ============
+-- =====================================================
+-- 启动画面
+-- =====================================================
+local splashFrame = Instance.new("Frame", gui)
+splashFrame.Size = UDim2.new(1, 0, 1, 0)
+splashFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+splashFrame.ZIndex = 100
+
+local splashTitle = Instance.new("TextLabel", splashFrame)
+splashTitle.Size = UDim2.new(0, 300, 0, 60)
+splashTitle.Position = UDim2.new(0.5, -150, 0.4, 0)
+splashTitle.BackgroundTransparency = 1
+splashTitle.Text = "NNNB"
+splashTitle.TextColor3 = Color3.fromRGB(255, 0, 0)
+splashTitle.Font = Enum.Font.GothamBlack
+splashTitle.TextSize = 50
+splashTitle.ZIndex = 101
+
+local splashFounder = Instance.new("TextLabel", splashFrame)
+splashFounder.Size = UDim2.new(0, 300, 0, 30)
+splashFounder.Position = UDim2.new(0.5, -150, 0.5, 0)
+splashFounder.BackgroundTransparency = 1
+splashFounder.Text = "创始人 Boos_陈"
+splashFounder.TextColor3 = Color3.fromRGB(255, 50, 50)
+splashFounder.Font = Enum.Font.GothamBold
+splashFounder.TextSize = 16
+splashFounder.ZIndex = 101
+
+local splashLoaded = Instance.new("TextLabel", splashFrame)
+splashLoaded.Size = UDim2.new(0, 300, 0, 30)
+splashLoaded.Position = UDim2.new(0.5, -150, 0.58, 0)
+splashLoaded.BackgroundTransparency = 1
+splashLoaded.Text = "加载成功"
+splashLoaded.TextColor3 = Color3.fromRGB(255, 255, 255)
+splashLoaded.Font = Enum.Font.Gotham
+splashLoaded.TextSize = 14
+splashLoaded.ZIndex = 101
+
+local splashHint = Instance.new("TextLabel", splashFrame)
+splashHint.Size = UDim2.new(0, 300, 0, 20)
+splashHint.Position = UDim2.new(0.5, -150, 0.7, 0)
+splashHint.BackgroundTransparency = 1
+splashHint.Text = "点击屏幕继续"
+splashHint.TextColor3 = Color3.fromRGB(150, 150, 150)
+splashHint.Font = Enum.Font.Gotham
+splashHint.TextSize = 11
+splashHint.ZIndex = 101
+
+splashFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        splashFrame:Destroy()
+    end
+end)
+
+-- =====================================================
+-- NN 主按钮
+-- =====================================================
 local mainBtn = Instance.new("TextButton", gui)
 mainBtn.Size = UDim2.new(0, 55, 0, 55)
 mainBtn.Position = UDim2.new(0.5, -27, 0.5, -27)
@@ -46,10 +103,12 @@ uis.InputChanged:Connect(function(i)
 end)
 uis.TouchEnded:Connect(function() dm = false end)
 
--- ============ 主菜单面板 ============
+-- =====================================================
+-- 主菜单面板
+-- =====================================================
 local panel = Instance.new("Frame", gui)
-panel.Size = UDim2.new(0, 175, 0, 220)
-panel.Position = UDim2.new(0.5, -87, 0.5, -110)
+panel.Size = UDim2.new(0, 175, 0, 225)
+panel.Position = UDim2.new(0.5, -87, 0.5, -112)
 panel.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 panel.BackgroundTransparency = 0.05
 panel.Visible = false
@@ -68,7 +127,7 @@ uis.InputChanged:Connect(function(i)
 end)
 uis.TouchEnded:Connect(function() dp = false end)
 
--- 标题 NNNB 彩色
+-- 标题
 local title = Instance.new("TextLabel", panel)
 title.Size = UDim2.new(1, -30, 0, 26)
 title.Position = UDim2.new(0, 12, 0, 5)
@@ -110,10 +169,10 @@ div.Position = UDim2.new(0.05, 0, 0, 44)
 div.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 div.ZIndex = 29
 
--- 状态
+-- 状态栏
 local statusLabel = Instance.new("TextLabel", panel)
 statusLabel.Size = UDim2.new(0.85, 0, 0, 14)
-statusLabel.Position = UDim2.new(0.075, 0, 0, 200)
+statusLabel.Position = UDim2.new(0.075, 0, 0, 205)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Text = ""
 statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
@@ -132,7 +191,9 @@ local function updateStatus()
     statusLabel.Text = #s > 0 and table.concat(s, " ") or ""
 end
 
--- ============ 主菜单按钮 ============
+-- =====================================================
+-- 主菜单按钮
+-- =====================================================
 local function makeMainBtn(name, y, color, cb)
     local btn = Instance.new("TextButton", panel)
     btn.Size = UDim2.new(0.85, 0, 0, 26)
@@ -148,7 +209,9 @@ local function makeMainBtn(name, y, color, cb)
     return btn
 end
 
--- ============ 子面板 ============
+-- =====================================================
+-- 子面板
+-- =====================================================
 local currentSubPanel = nil
 local function closeSub()
     if currentSubPanel then currentSubPanel:Destroy(); currentSubPanel = nil end
@@ -200,7 +263,9 @@ local function addSBtn(parent, name, y, cb2, color)
     return btn
 end
 
--- ============ 1. 飞行 ============
+-- =====================================================
+-- 1. 飞行
+-- =====================================================
 local function openFly()
     local sp = createSub("✈ 飞行设置")
     local flyBtn2 = addSBtn(sp, "飞行：关", 35, function()
@@ -211,6 +276,10 @@ local function openFly()
             for _, n in ipairs({"FlyGyro", "FlyVelocity"}) do
                 local o = root:FindFirstChild(n); if o then o:Destroy() end
             end
+            local bc = root:FindFirstChildOfClass("BodyVelocity")
+            local bgc = root:FindFirstChildOfClass("BodyGyro")
+            if bc then bc:Destroy() end
+            if bgc then bgc:Destroy() end
             flyBtn2.Text = "飞行：关"; flyBtn2.BackgroundColor3 = Color3.fromRGB(38, 38, 38)
             mainBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
             activeTouches = {}
@@ -229,21 +298,23 @@ local function openFly()
 
     local sl = Instance.new("TextLabel", sp)
     sl.Size = UDim2.new(0.85, 0, 0, 14)
-    sl.Position = UDim2.new(0.075, 0, 0, 70)
+    sl.Position = UDim2.new(0.075, 0, 0, 66)
     sl.BackgroundTransparency = 1
     sl.Text = "速度：" .. speed
     sl.TextColor3 = Color3.fromRGB(200, 200, 200)
     sl.Font = Enum.Font.Gotham; sl.TextSize = 10; sl.TextXAlignment = Enum.TextXAlignment.Center; sl.ZIndex = 28
 
-    local sps = {{"1档 40", 40}, {"2档 100", 100}, {"3档 500", 500}, {"4档 1000", 1000}}
+    local sps = {{"1档 40", 40}, {"2档 100", 100}, {"3档 500", 500}, {"4档 1000", 1000}, {"5档 2000", 2000}}
     for i, sv in ipairs(sps) do
-        addSBtn(sp, sv[1], 90 + (i - 1) * 28, function()
+        addSBtn(sp, sv[1], 84 + (i - 1) * 26, function()
             speed = sv[2]; sl.Text = "速度：" .. speed
         end, speed == sv[2] and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(38, 38, 38))
     end
 end
 
--- ============ 2. 穿墙 ============
+-- =====================================================
+-- 2. 穿墙
+-- =====================================================
 local function openNoclip()
     local sp = createSub("🧱 穿墙设置")
     local nb2 = addSBtn(sp, "穿墙：关", 35, function()
@@ -263,7 +334,9 @@ local function openNoclip()
     ht.Font = Enum.Font.Gotham; ht.TextSize = 10; ht.TextXAlignment = Enum.TextXAlignment.Center; ht.ZIndex = 28
 end
 
--- ============ 3. 透视 ============
+-- =====================================================
+-- 3. 透视
+-- =====================================================
 local function createESP(p)
     if p == player then return end
     local c = p.Character; if not c then return end
@@ -319,7 +392,9 @@ game.Players.PlayerRemoving:Connect(function(p)
     end end
 end)
 
--- ============ 4. 传送 ============
+-- =====================================================
+-- 4. 传送
+-- =====================================================
 local function openTP()
     local sp = createSub("📍 传送玩家")
     local sf = Instance.new("ScrollingFrame", sp)
@@ -353,11 +428,9 @@ local function openTP()
     addSBtn(sp, "🔄 刷新列表", 175, refreshList, Color3.fromRGB(45, 45, 45))
 end
 
--- ============ 5. 防摔 ============
-local function toggleAntiFall()
-    antiFall = not antiFall
-    updateStatus()
-end
+-- =====================================================
+-- 5. 防摔
+-- =====================================================
 local function openAntiFall()
     local sp = createSub("🛡 防摔设置")
     local afb = addSBtn(sp, "防摔：关", 35, function()
@@ -376,7 +449,9 @@ local function openAntiFall()
     ht3.Font = Enum.Font.Gotham; ht3.TextSize = 10; ht3.TextXAlignment = Enum.TextXAlignment.Center; ht3.ZIndex = 28
 end
 
--- ============ 6. 夜视 ============
+-- =====================================================
+-- 6. 夜视
+-- =====================================================
 local function openNV()
     local sp = createSub("☀ 夜视设置")
     local nvb = addSBtn(sp, "夜视：关", 35, function()
@@ -384,16 +459,12 @@ local function openNV()
         nvb.Text = nightVision and "夜视：开" or "夜视：关"
         nvb.BackgroundColor3 = nightVision and Color3.fromRGB(255, 200, 50) or Color3.fromRGB(38, 38, 38)
         if nightVision then
-            lighting.Brightness = 2
-            lighting.ClockTime = 12
-            lighting.FogEnd = 9999
-            lighting.GlobalShadows = false
+            lighting.Brightness = 2; lighting.ClockTime = 12
+            lighting.FogEnd = 9999; lighting.GlobalShadows = false
             lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
         else
-            lighting.Brightness = 1
-            lighting.ClockTime = 14
-            lighting.FogEnd = 1000
-            lighting.GlobalShadows = true
+            lighting.Brightness = 1; lighting.ClockTime = 14
+            lighting.FogEnd = 1000; lighting.GlobalShadows = true
             lighting.OutdoorAmbient = Color3.fromRGB(70, 70, 70)
         end
         updateStatus()
@@ -408,7 +479,9 @@ local function openNV()
     ht4.Font = Enum.Font.Gotham; ht4.TextSize = 10; ht4.TextXAlignment = Enum.TextXAlignment.Center; ht4.ZIndex = 28
 end
 
--- ============ 主菜单按钮绑定 ============
+-- =====================================================
+-- 主菜单按钮绑定
+-- =====================================================
 makeMainBtn("✈ 飞行", 50, Color3.fromRGB(50, 180, 50), openFly)
 makeMainBtn("🧱 穿墙", 80, Color3.fromRGB(180, 120, 40), openNoclip)
 makeMainBtn("👁 透视", 110, Color3.fromRGB(50, 120, 255), openESP)
@@ -416,7 +489,9 @@ makeMainBtn("📍 传送", 140, Color3.fromRGB(150, 50, 200), openTP)
 makeMainBtn("🛡 防摔", 170, Color3.fromRGB(50, 180, 100), openAntiFall)
 makeMainBtn("☀ 夜视", 200, Color3.fromRGB(255, 180, 30), openNV)
 
--- ============ 事件 ============
+-- =====================================================
+-- 事件
+-- =====================================================
 mainBtn.MouseButton1Click:Connect(function() closeSub(); panel.Visible = not panel.Visible end)
 closeBtn.MouseButton1Click:Connect(function() closeSub(); panel.Visible = false end)
 
@@ -430,11 +505,9 @@ rs.Stepped:Connect(function()
 end)
 
 -- 防摔
-hum.StateChanged:Connect(function(_, newState)
-    if antiFall and newState == Enum.HumanoidStateType.FallingDown then
-        hum.PlatformStand = true
-        wait(0.1)
-        hum.PlatformStand = false
+hum.StateChanged:Connect(function(_, ns)
+    if antiFall and ns == Enum.HumanoidStateType.FallingDown then
+        hum.PlatformStand = true; wait(0.1); hum.PlatformStand = false
     end
 end)
 
