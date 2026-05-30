@@ -1,40 +1,4 @@
--- 手机版飞天脚本
-local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local hum = char:WaitForChild("Humanoid")
-local root = char:WaitForChild("HumanoidRootPart")
-local rs = game:GetService("RunService")
-local uis = game:GetService("UserInputService")
-
-local flying = false
-local speed = 50
-
-pcall(function() player.PlayerGui:FindFirstChild("FlyGui"):Destroy() end)
-
-local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "FlyGui"
-gui.ResetOnSpawn = false
-
--- 主按钮
-local mainBtn = Instance.new("TextButton", gui)
-mainBtn.Size = UDim2.new(0, 50, 0, 50)
-mainBtn.Position = UDim2.new(0.8, 0, 0.05, 0)
-mainBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-mainBtn.BackgroundTransparency = 0.3
-mainBtn.Text = "✈️"
-mainBtn.TextSize = 24
-Instance.new("UICorner", mainBtn).CornerRadius = UDim.new(0, 25)
-
--- 面板
-local panel = Instance.new("Frame", gui)
-panel.Size = UDim2.new(0, 160, 0, 180)
-panel.Position = UDim2.new(0.75, 0, 0.18, 0)
-panel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-panel.BackgroundTransparency = 0.2
-panel.Visible = false
-Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 12)
-
--- 飞行开关
+- 飞行开关
 local flyBtn = Instance.new("TextButton", panel)
 flyBtn.Size = UDim2.new(0.85, 0, 0, 38)
 flyBtn.Position = UDim2.new(0.075, 0, 0.08, 0)
