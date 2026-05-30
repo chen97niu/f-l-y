@@ -1,4 +1,4 @@
--- NNNB 飞行脚本（纯摇杆，无按钮，修复断触）
+-- NNNB 飞行脚本（摇杆控制前进后退左右移动，视角决定飞行方向，修复断触）
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hum = char:WaitForChild("Humanoid")
@@ -9,7 +9,7 @@ local uis = game:GetService("UserInputService")
 local flying = false
 local speed = 50
 
--- 摇杆数据（用多点触摸追踪，修复断触）
+-- 多点触摸追踪
 local activeTouches = {}
 
 pcall(function() player.PlayerGui:FindFirstChild("NNBGui"):Destroy() end)
@@ -18,7 +18,7 @@ local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.Name = "NNBGui"
 gui.ResetOnSpawn = false
 
--- ============ NN 主按钮（圆形） ============
+-- ============ NN 圆形主按钮 ============
 local mainBtn = Instance.new("TextButton", gui)
 mainBtn.Size = UDim2.new(0, 55, 0, 55)
 mainBtn.Position = UDim2.new(0.5, -27, 0.5, -27)
@@ -31,30 +31,30 @@ mainBtn.TextSize = 18
 mainBtn.ZIndex = 20
 Instance.new("UICorner", mainBtn).CornerRadius = UDim.new(1, 0)
 
--- NN 按钮可拖动
-local dragMain = false
-local dragStartPos, btnStartPos = nil, nil
+-- NN 可拖动
+local draggingMain = false
+local mainDragStart, mainPosStart = nil, nil
 
 mainBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch then
-        dragMain = true
-        dragStartPos = input.Position
-        btnStartPos = mainBtn.Position
+        draggingMain = true
+        mainDragStart = input.Position
+        mainPosStart = mainBtn.Position
     end
 end)
 
 uis.InputChanged:Connect(function(input)
-    if dragMain and input.UserInputType == Enum.UserInputType.Touch then
-        local delta = input.Position - dragStartPos
+    if draggingMain and input.UserInputType == Enum.UserInputType.Touch then
+        local d = input.Position - mainDragStart
         mainBtn.Position = UDim2.new(
-            btnStartPos.X.Scale, btnStartPos.X.Offset + delta.X,
-            btnStartPos.Y.Scale, btnStartPos.Y.Offset + delta.Y
+            mainPosStart.X.Scale, mainPosStart.X.Offset + d.X,
+            mainPosStart.Y.Scale, mainPosStart.Y.Offset + d.Y
         )
     end
 end)
 
 uis.TouchEnded:Connect(function(input)
-    dragMain = false
+    draggingMain = false
 end)
 
 -- ============ 弹出面板 ============
@@ -68,29 +68,29 @@ panel.ZIndex = 19
 Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 12)
 
 -- 面板可拖动
-local dragPanel = false
-local panelDragStart, panelStartPos = nil, nil
+local draggingPanel = false
+local panelDragStart, panelPosStart = nil, nil
 
 panel.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch then
-        dragPanel = true
+        draggingPanel = true
         panelDragStart = input.Position
-        panelStartPos = panel.Position
+        panelPosStart = panel.Position
     end
 end)
 
 uis.InputChanged:Connect(function(input)
-    if dragPanel and input.UserInputType == Enum.UserInputType.Touch then
-        local delta = input.Position - panelDragStart
+    if draggingPanel and input.UserInputType == Enum.UserInputType.Touch then
+        local d = input.Position - panelDragStart
         panel.Position = UDim2.new(
-            panelStartPos.X.Scale, panelStartPos.X.Offset + delta.X,
-            panelStartPos.Y.Scale, panelStartPos.Y.Offset + delta.Y
+            panelPosStart.X.Scale, panelPosStart.X.Offset + d.X,
+            panelPosStart.Y.Scale, panelPosStart.Y.Offset + d.Y
         )
     end
 end)
 
 uis.TouchEnded:Connect(function(input)
-    dragPanel = false
+    draggingPanel = false
 end)
 
 -- 标题 NNNB
@@ -188,7 +188,6 @@ local function stopFly()
     activeTouches = {}
 end
 
--- 点 NN 按钮
 mainBtn.MouseButton1Click:Connect(function()
     if flying then
         stopFly()
@@ -197,17 +196,14 @@ mainBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 飞行按钮
 flyBtn.MouseButton1Click:Connect(function()
     if flying then stopFly() else startFly() end
 end)
 
--- 关闭按钮
 closeBtn.MouseButton1Click:Connect(function()
     panel.Visible = false
 end)
 
--- 速度
 speedDown.MouseButton1Click:Connect(function()
     speed = math.max(5, speed - 5)
     speedText.Text = "速度："..speed
@@ -248,27 +244,45 @@ rs.RenderStepped:Connect(function()
     if not bv or not bg then return end
     
     local cam = workspace.CurrentCamera
+    local camForward = cam.CFrame.LookVector
+    local camRight = cam.CFrame.RightVector
     
-    -- 遍历所有活跃触摸，找左边的摇杆触摸
-    local moveDir = Vector3.zero
+    -- 水平方向（去掉Y分量，保持在地面平面）
+    local forwardFlat = Vector3.new(camForward.X, 0, camForward.Z)
+    if forwardFlat.Magnitude > 0 then forwardFlat = forwardFlat.Unit end
+    local rightFlat = Vector3.new(camRight.X, 0, camRight.Z)
+    if rightFlat.Magnitude > 0 then rightFlat = rightFlat.Unit end
+    
+    -- 遍历左半边触摸
+    local moveX, moveY = 0, 0
     for _, data in pairs(activeTouches) do
         if data.isLeft and data.startPos and data.currentPos then
             local delta = data.currentPos - data.startPos
             if delta.Magnitude > 15 then
                 local clamped = delta.Magnitude > 80 and delta.Unit * 80 or delta
-                local nx = clamped.X / 80  -- 左右
-                local ny = clamped.Y / 80  -- 上下
-                -- 水平移动
-                moveDir += cam.CFrame.RightVector * nx
-                -- 垂直移动（摇杆上推=上升，下推=下降）
-                moveDir += Vector3.new(0, 1, 0) * (-ny)
+                moveX = clamped.X / 80   -- 左右（-1到1）
+                moveY = clamped.Y / 80   -- 上下（-1到1）
             end
         end
     end
     
-    if moveDir.Magnitude > 1 then moveDir = moveDir.Unit end
+    -- 组装飞行方向
+    -- 摇杆推上（moveY负）= 前进
+    -- 摇杆推下（moveY正）= 后退
+    -- 摇杆推左（moveX负）= 左移
+    -- 摇杆推右（moveX正）= 右移
+    local flyDir = Vector3.zero
+    flyDir += forwardFlat * (-moveY)   -- 前进/后退（基于视角水平方向）
+    flyDir += rightFlat * moveX        -- 左右平移（基于视角水平方向）
     
-    bv.Velocity = moveDir * speed
+    -- 上下飞：根据视角垂直方向
+    -- 视角朝上时前进=上升，视角朝下时前进=下降
+    flyDir += Vector3.new(0, camForward.Y, 0) * (-moveY)
+    flyDir += Vector3.new(0, camRight.Y, 0) * moveX
+    
+    if flyDir.Magnitude > 1 then flyDir = flyDir.Unit end
+    
+    bv.Velocity = flyDir * speed
     bg.CFrame = cam.CFrame
 end)
 
