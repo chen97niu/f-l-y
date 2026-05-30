@@ -104,11 +104,11 @@ end)
 uis.TouchEnded:Connect(function() dm=false end)
 
 -- =====================================================
--- 主面板（左侧=菜单，右侧=时钟+状态）
+-- 主面板
 -- =====================================================
 local panel = Instance.new("Frame", gui)
-panel.Size = UDim2.new(0,340,0,210)
-panel.Position = UDim2.new(0.5,-170,0.5,-105)
+panel.Size = UDim2.new(0,340,0,220)
+panel.Position = UDim2.new(0.5,-170,0.5,-110)
 panel.BackgroundColor3 = Color3.fromRGB(10,10,10)
 panel.BackgroundTransparency = 0.05
 panel.Visible = false
@@ -127,7 +127,18 @@ uis.InputChanged:Connect(function(i)
 end)
 uis.TouchEnded:Connect(function() dp=false end)
 
--- ============ 左侧：菜单按钮 ============
+-- 关闭
+local closeBtn = Instance.new("TextButton", panel)
+closeBtn.Size = UDim2.new(0,18,0,18)
+closeBtn.Position = UDim2.new(1,-22,0,4)
+closeBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.TextSize = 9
+closeBtn.ZIndex = 32
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1,0)
+
+-- ============ 左侧：可滚动菜单 ============
 local leftPanel = Instance.new("Frame", panel)
 leftPanel.Size = UDim2.new(0,195,1,0)
 leftPanel.BackgroundColor3 = Color3.fromRGB(14,14,14)
@@ -145,7 +156,7 @@ titleNN.TextColor3 = Color3.fromRGB(255,80,255)
 titleNN.Font = Enum.Font.GothamBlack
 titleNN.TextSize = 17
 titleNN.TextXAlignment = Enum.TextXAlignment.Left
-titleNN.ZIndex = 29
+titleNN.ZIndex = 31
 
 local hue = 0
 rs.Heartbeat:Connect(function()
@@ -162,23 +173,22 @@ verLabel.TextColor3 = Color3.fromRGB(255,40,40)
 verLabel.Font = Enum.Font.Gotham
 verLabel.TextSize = 9
 verLabel.TextXAlignment = Enum.TextXAlignment.Left
-verLabel.ZIndex = 29
+verLabel.ZIndex = 31
 
--- 关闭
-local closeBtn = Instance.new("TextButton", panel)
-closeBtn.Size = UDim2.new(0,18,0,18)
-closeBtn.Position = UDim2.new(1,-20,0,4)
-closeBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
-closeBtn.Text = "✕"
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.TextSize = 9
-closeBtn.ZIndex = 29
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1,0)
+-- 可滚动区域
+local scrollFrame = Instance.new("ScrollingFrame", leftPanel)
+scrollFrame.Size = UDim2.new(1,0,1,-40)
+scrollFrame.Position = UDim2.new(0,0,0,40)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.ScrollBarThickness = 3
+scrollFrame.CanvasSize = UDim2.new(0,0,0,280)
+scrollFrame.ZIndex = 29
+scrollFrame.ScrollingDirection = Enum.ScrollingDirection.Y
 
 -- 主要内容标签
-local mainLabel = Instance.new("TextLabel", leftPanel)
-mainLabel.Size = UDim2.new(0.9,0,0,16)
-mainLabel.Position = UDim2.new(0.05,0,0,40)
+local mainLabel = Instance.new("TextLabel", scrollFrame)
+mainLabel.Size = UDim2.new(0.9,0,0,14)
+mainLabel.Position = UDim2.new(0.05,0,0,2)
 mainLabel.BackgroundTransparency = 1
 mainLabel.Text = "▼ 主要内容"
 mainLabel.TextColor3 = Color3.fromRGB(255,200,100)
@@ -188,9 +198,9 @@ mainLabel.TextXAlignment = Enum.TextXAlignment.Left
 mainLabel.ZIndex = 29
 
 -- 次要内容标签
-local subLabel = Instance.new("TextLabel", leftPanel)
-subLabel.Size = UDim2.new(0.9,0,0,16)
-subLabel.Position = UDim2.new(0.05,0,0,135)
+local subLabel = Instance.new("TextLabel", scrollFrame)
+subLabel.Size = UDim2.new(0.9,0,0,14)
+subLabel.Position = UDim2.new(0.05,0,0,130)
 subLabel.BackgroundTransparency = 1
 subLabel.Text = "▼ 次要内容"
 subLabel.TextColor3 = Color3.fromRGB(150,150,150)
@@ -199,10 +209,9 @@ subLabel.TextSize = 10
 subLabel.TextXAlignment = Enum.TextXAlignment.Left
 subLabel.ZIndex = 29
 
--- 功能按钮
 local function makeMainBtn(name, y, cb)
-    local btn = Instance.new("TextButton", leftPanel)
-    btn.Size = UDim2.new(0.9,0,0,22)
+    local btn = Instance.new("TextButton", scrollFrame)
+    btn.Size = UDim2.new(0.9,0,0,24)
     btn.Position = UDim2.new(0.05,0,0,y)
     btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
     btn.Text = name
@@ -226,7 +235,7 @@ Instance.new("UICorner", rightPanel).CornerRadius = UDim.new(0,10)
 
 local clockLabel = Instance.new("TextLabel", rightPanel)
 clockLabel.Size = UDim2.new(1,0,0,40)
-clockLabel.Position = UDim2.new(0,0,0,15)
+clockLabel.Position = UDim2.new(0,0,0,18)
 clockLabel.BackgroundTransparency = 1
 clockLabel.Text = "00:00:00"
 clockLabel.TextColor3 = Color3.fromRGB(0,255,200)
@@ -236,7 +245,7 @@ clockLabel.ZIndex = 29
 
 local dateLabel = Instance.new("TextLabel", rightPanel)
 dateLabel.Size = UDim2.new(1,0,0,14)
-dateLabel.Position = UDim2.new(0,0,0,53)
+dateLabel.Position = UDim2.new(0,0,0,56)
 dateLabel.BackgroundTransparency = 1
 dateLabel.Text = "----年--月--日"
 dateLabel.TextColor3 = Color3.fromRGB(150,150,150)
@@ -246,13 +255,13 @@ dateLabel.ZIndex = 29
 
 local divR = Instance.new("Frame", rightPanel)
 divR.Size = UDim2.new(0.8,0,0,1)
-divR.Position = UDim2.new(0.1,0,0,72)
+divR.Position = UDim2.new(0.1,0,0,74)
 divR.BackgroundColor3 = Color3.fromRGB(60,60,60)
 divR.ZIndex = 29
 
 local statusTitle = Instance.new("TextLabel", rightPanel)
-statusTitle.Size = UDim2.new(1,0,0,16)
-statusTitle.Position = UDim2.new(0,0,0,80)
+statusTitle.Size = UDim2.new(1,0,0,14)
+statusTitle.Position = UDim2.new(0,0,0,82)
 statusTitle.BackgroundTransparency = 1
 statusTitle.Text = "已开启"
 statusTitle.TextColor3 = Color3.fromRGB(200,200,200)
@@ -261,7 +270,7 @@ statusTitle.TextSize = 10
 statusTitle.ZIndex = 29
 
 local statusList = Instance.new("TextLabel", rightPanel)
-statusList.Size = UDim2.new(1,0,0,110)
+statusList.Size = UDim2.new(1,0,0,120)
 statusList.Position = UDim2.new(0,0,0,96)
 statusList.BackgroundTransparency = 1
 statusList.Text = "无"
@@ -331,25 +340,30 @@ end
 -- 开关按钮：开=绿，关=红
 local function addSwitch(parent, name, y, getState, toggleFn)
     local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0.85,0,0,26)
+    btn.Size = UDim2.new(0.85,0,0,28)
     btn.Position = UDim2.new(0.075,0,0,y)
-    btn.Text = name .. "：关"
+    btn.Text = name
     btn.TextColor3 = Color3.fromRGB(255,255,255)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 11
     btn.ZIndex = 28
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,5)
+    
     local function refresh()
-        if getState() then
-            btn.Text = name .. "：开"
+        local state = getState()
+        if state then
+            btn.Text = name .. " ✓"
             btn.BackgroundColor3 = Color3.fromRGB(50,200,50)
         else
-            btn.Text = name .. "：关"
+            btn.Text = name
             btn.BackgroundColor3 = Color3.fromRGB(200,50,50)
         end
     end
     refresh()
-    btn.MouseButton1Click:Connect(function() toggleFn(); refresh() end)
+    btn.MouseButton1Click:Connect(function()
+        toggleFn()
+        refresh()
+    end)
     return btn
 end
 
@@ -378,14 +392,14 @@ local function openFly()
         end
     )
     local sl=Instance.new("TextLabel",sp)
-    sl.Size=UDim2.new(0.85,0,0,14); sl.Position=UDim2.new(0.075,0,0,64)
+    sl.Size=UDim2.new(0.85,0,0,14); sl.Position=UDim2.new(0.075,0,0,66)
     sl.BackgroundTransparency=1; sl.Text="速度："..speed
     sl.TextColor3=Color3.fromRGB(200,200,200); sl.Font=Enum.Font.Gotham; sl.TextSize=10
     sl.TextXAlignment=Enum.TextXAlignment.Center; sl.ZIndex=28
     local sps={{"1档 40",40},{"2档 100",100},{"3档 500",500},{"4档 1000",1000},{"5档 2000",2000}}
     for i,sv in ipairs(sps) do
         local b=Instance.new("TextButton",sp)
-        b.Size=UDim2.new(0.85,0,0,21); b.Position=UDim2.new(0.075,0,0,82+(i-1)*24)
+        b.Size=UDim2.new(0.85,0,0,21); b.Position=UDim2.new(0.075,0,0,84+(i-1)*23)
         b.BackgroundColor3=speed==sv[2] and Color3.fromRGB(100,150,255) or Color3.fromRGB(35,35,35)
         b.Text=sv[1]; b.TextColor3=Color3.fromRGB(255,255,255); b.Font=Enum.Font.GothamBold; b.TextSize=10; b.ZIndex=28
         Instance.new("UICorner",b).CornerRadius=UDim.new(0,4)
@@ -418,19 +432,19 @@ local function openNoclip()
 end
 
 -- =====================================================
--- 3. 透视（修复版）
+-- 3. 透视
 -- =====================================================
 local function createESP(p)
     if p==player then return end
     local c=p.Character; if not c then return end
     local hd=c:FindFirstChild("Head"); if not hd then return end
     for i,o in ipairs(espObjects) do if o.p==p then
-        if o.h and o.h.Parent then o.h:Destroy() end
-        if o.b and o.b.Parent then o.b:Destroy() end
+        pcall(function() if o.h then o.h:Destroy() end end)
+        pcall(function() if o.b then o.b:Destroy() end end)
         table.remove(espObjects,i); break
     end end
-    local hl=Instance.new("Highlight",c); hl.Name="NNESP"; hl.FillTransparency=1
-    hl.OutlineColor=Color3.fromRGB(255,0,0); hl.OutlineTransparency=0
+    local hl=Instance.new("Highlight",c); hl.Name="NNESP"
+    hl.FillTransparency=1; hl.OutlineColor=Color3.fromRGB(255,0,0); hl.OutlineTransparency=0
     local bb=Instance.new("BillboardGui",hd); bb.Name="NNESPL"
     bb.Size=UDim2.new(0,100,0,20); bb.StudsOffset=Vector3.new(0,3,0); bb.AlwaysOnTop=true
     local lb=Instance.new("TextLabel",bb); lb.Size=UDim2.new(1,0,1,0); lb.BackgroundTransparency=1
@@ -439,8 +453,8 @@ local function createESP(p)
 end
 local function clearESP()
     for _,o in ipairs(espObjects) do
-        if o.h and o.h.Parent then o.h:Destroy() end
-        if o.b and o.b.Parent then o.b:Destroy() end
+        pcall(function() if o.h then o.h:Destroy() end end)
+        pcall(function() if o.b then o.b:Destroy() end end)
     end
     espObjects={}
 end
@@ -465,11 +479,14 @@ local function openESP()
 end
 
 game.Players.PlayerAdded:Connect(function(p)
-    p.CharacterAdded:Connect(function() if espEnabled then wait(0.5) pcall(function() createESP(p) end) end end)
+    p.CharacterAdded:Connect(function()
+        if espEnabled then wait(0.5) pcall(function() createESP(p) end) end
+    end)
 end)
 game.Players.PlayerRemoving:Connect(function(p)
     for i,o in ipairs(espObjects) do if o.p==p then
-        if o.h then o.h:Destroy() end; if o.b then o.b:Destroy() end
+        pcall(function() if o.h then o.h:Destroy() end end)
+        pcall(function() if o.b then o.b:Destroy() end end)
         table.remove(espObjects,i); break
     end end
 end)
@@ -518,8 +535,7 @@ local function openAntiDetect()
     addSwitch(sp, "防检测", 32,
         function() return antiDetect end,
         function()
-            antiDetect=not antiDetect
-            updateStatus()
+            antiDetect=not antiDetect; updateStatus()
         end
     )
     local ht3=Instance.new("TextLabel",sp)
@@ -536,8 +552,7 @@ local function openAntiFall()
     addSwitch(sp, "防摔", 32,
         function() return antiFall end,
         function()
-            antiFall=not antiFall
-            updateStatus()
+            antiFall=not antiFall; updateStatus()
         end
     )
     local ht4=Instance.new("TextLabel",sp)
@@ -574,13 +589,16 @@ end
 -- =====================================================
 -- 主菜单按钮绑定
 -- =====================================================
-makeMainBtn("✈ 飞行", 58, openFly)
-makeMainBtn("🧱 穿墙", 84, openNoclip)
-makeMainBtn("👁 透视", 110, openESP)
-makeMainBtn("📍 传送", 158, openTP)
-makeMainBtn("🛡 防检测", 184, openAntiDetect)
-makeMainBtn("🦿 防摔", 210, openAntiFall)
-makeMainBtn("☀ 夜视", 236, openNV)
+makeMainBtn("✈ 飞行", 18, openFly)
+makeMainBtn("🧱 穿墙", 46, openNoclip)
+makeMainBtn("👁 透视", 74, openESP)
+makeMainBtn("📍 传送", 102, openTP)
+makeMainBtn("🛡 防检测", 146, openAntiDetect)
+makeMainBtn("🦿 防摔", 174, openAntiFall)
+makeMainBtn("☀ 夜视", 202, openNV)
+
+-- 更新滚动区域画布大小
+scrollFrame.CanvasSize = UDim2.new(0,0,0,235)
 
 -- =====================================================
 -- 事件
@@ -590,7 +608,9 @@ closeBtn.MouseButton1Click:Connect(function() closeSub(); panel.Visible=false en
 
 rs.Stepped:Connect(function()
     if noclip and flying and char then
-        for _,p in ipairs(char:GetDescendants()) do if p:IsA("BasePart") and p.CanCollide then p.CanCollide=false end end
+        for _,p in ipairs(char:GetDescendants()) do
+            if p:IsA("BasePart") and p.CanCollide then p.CanCollide=false end
+        end
     end
 end)
 
