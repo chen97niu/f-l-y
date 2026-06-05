@@ -9,7 +9,31 @@ local function v4()local w4=y1("💪 无敌设置");d2(w4,"无敌",32,function()
 local function z4()local a5=y1("🦘 无限跳跃");d2(a5,"无限跳",32,function()return o end,function()o=not o;w1()end);local b5=Instance.new("TextLabel",a5);b5.Size=UDim2.new(0.85,0,0,30);b5.Position=UDim2.new(0.075,0,0,70);b5.BackgroundTransparency=1;b5.Text="空中也能无限跳";b5.TextColor3=Color3.fromRGB(150,150,150);b5.Font=Enum.Font.Gotham;b5.TextSize=9;b5.TextXAlignment=Enum.TextXAlignment.Center;b5.ZIndex=44 end
 local function c5()local d5=y1("🎯 自瞄设置");d2(d5,"自瞄",32,function()return p end,function()p=not p;y=0;w1()end);local e5=Instance.new("TextLabel",d5);e5.Size=UDim2.new(0.85,0,0,50);e5.Position=UDim2.new(0.075,0,0,70);e5.BackgroundTransparency=1;e5.Text="自动锁头 范围:"..x.."\n队伍检查 不卡顿";e5.TextColor3=Color3.fromRGB(150,150,150);e5.Font=Enum.Font.Gotham;e5.TextSize=9;e5.TextXAlignment=Enum.TextXAlignment.Center;e5.TextWrapped=true;e5.ZIndex=44 end
 local A1=false;local function f5()local g5=y1("🔒 防检自瞄");d2(g5,"防检自瞄",32,function()return A1 end,function()A1=not A1;if A1 then if B then B:Destroy()end;if C then C:Destroy()end;B=Instance.new("Frame",L);B.Size=UDim2.new(0,A*2,0,A*2);B.Position=UDim2.new(0.5,-A,0.5,-A);B.BackgroundTransparency=1;B.ZIndex=25;local h5=Instance.new("UIStroke",B);h5.Color=Color3.fromRGB(255,255,255);h5.Thickness=1;Instance.new("UICorner",B).CornerRadius=UDim.new(1,0);C=Instance.new("Frame",L);C.Size=UDim2.new(0,20,0,20);C.Position=UDim2.new(0.5,-10,0.5,-10);C.BackgroundTransparency=1;C.ZIndex=26;local i5=Instance.new("Frame",C);i5.Size=UDim2.new(0,2,1,0);i5.Position=UDim2.new(0.5,-1,0,0);i5.BackgroundColor3=Color3.fromRGB(255,0,0);i5.BorderSizePixel=0;i5.ZIndex=26;local j5=Instance.new("Frame",C);j5.Size=UDim2.new(1,0,0,2);j5.Position=UDim2.new(0,0,0.5,-1);j5.BackgroundColor3=Color3.fromRGB(255,0,0);j5.BorderSizePixel=0;j5.ZIndex=26 else if B then B:Destroy();B=nil end;if C then C:Destroy();C=nil end end;w1()end);local k5=Instance.new("TextLabel",g5);k5.Size=UDim2.new(0.85,0,0,50);k5.Position=UDim2.new(0.075,0,0,70);k5.BackgroundTransparency=1;k5.Text="50范围 白圈+准星\n平滑锁敌 不锁队友";k5.TextColor3=Color3.fromRGB(150,150,150);k5.Font=Enum.Font.Gotham;k5.TextSize=9;k5.TextXAlignment=Enum.TextXAlignment.Center;k5.TextWrapped=true;k5.ZIndex=44 end
-local function l5()local m5=y1("🔫 子弹追踪");d2(m5,"子弹追踪",32,function()return r end,function()r=not r;w1()end);local n5=Instance.new("TextLabel",m5);n5.Size=UDim2.new(0.85,0,0,50);n5.Position=UDim2.new(0.075,0,0,70);n5.BackgroundTransparency=1;n5.Text="子弹自动飞向目标\n开启即生效";n5.TextColor3=Color3.fromRGB(150,150,150);n5.Font=Enum.Font.Gotham;n5.TextSize=9;n5.TextXAlignment=Enum.TextXAlignment.Center;n5.TextWrapped=true;n5.ZIndex=44 end
+local btHooksActive=false
+local function enableBTHooks()
+    if btHooksActive then return end
+    btHooksActive=true
+    local function capitalize(str)return str:sub(1,1):upper()..str:sub(2)end
+    local origNamecall=hookmetamethod(game,"__namecall",newcclosure(function(self,...)
+        local method=capitalize(getnamecallmethod())
+        if not checkcaller()and r and btTarget then
+            local args={...}
+            if self==workspace and method=="Raycast"then
+                local origin=args[1];local dir=(btTarget.Position-origin).Unit
+                args[2]=dir*(args[2]and args[2].Magnitude or 1000)
+                return origNamecall(self,unpack(args))
+            end
+        end
+        return origNamecall(self,...)
+    end))
+    local origRayNew=hookfunction(Ray.new,function(origin,dir)
+        if not checkcaller()and r and btTarget then
+            return origRayNew(origin,(btTarget.Position-origin).Unit*dir.Magnitude)
+        end
+        return origRayNew(origin,dir)
+    end)
+end
+local function l5()local m5=y1("🔫 子弹追踪");d2(m5,"子弹追踪",32,function()return r end,function()r=not r;if r then enableBTHooks()end;w1()end);local n5=Instance.new("TextLabel",m5);n5.Size=UDim2.new(0.85,0,0,50);n5.Position=UDim2.new(0.075,0,0,70);n5.BackgroundTransparency=1;n5.Text="子弹自动飞向目标\n开启即生效";n5.TextColor3=Color3.fromRGB(150,150,150);n5.Font=Enum.Font.Gotham;n5.TextSize=9;n5.TextXAlignment=Enum.TextXAlignment.Center;n5.TextWrapped=true;n5.ZIndex=44 end
 local function o5()local p5=y1("🥷 忍者走路");d2(p5,"忍者走路",32,function()return s end,function()s=not s;if s then if G then G:Stop();G=nil end;local q5=Instance.new("Animation");q5.AnimationId="rbxassetid://656117400";G=c:LoadAnimation(q5);G:Play();else if G then G:Stop();G=nil end end;w1()end);local r5=Instance.new("TextLabel",p5);r5.Size=UDim2.new(0.85,0,0,30);r5.Position=UDim2.new(0.075,0,0,70);r5.BackgroundTransparency=1;r5.Text="走路播放忍者动画";r5.TextColor3=Color3.fromRGB(150,150,150);r5.Font=Enum.Font.Gotham;r5.TextSize=9;r5.TextXAlignment=Enum.TextXAlignment.Center;r5.ZIndex=44 end
 local function s5()local t5=y1("⚡ 瞬移追踪");d2(t5,"瞬移追踪",32,function()return E end,function()E=not E;if not E then D=nil end;w1()end);local u5=Instance.new("ScrollingFrame",t5);u5.Size=UDim2.new(0.9,0,0,100);u5.Position=UDim2.new(0.05,0,0,70);u5.BackgroundTransparency=1;u5.ScrollBarThickness=3;u5.CanvasSize=UDim2.new(0,0,0,0);u5.ZIndex=44;local v5=Instance.new("UIListLayout",u5);v5.Padding=UDim.new(0,3);v5.SortOrder=Enum.SortOrder.Name;local function w5()for _,x5 in ipairs(u5:GetChildren())do if x5:IsA("TextButton")then x5:Destroy()end end;local y5=0;for _,z5 in ipairs(game.Players:GetPlayers())do if z5~=a then local a6=Instance.new("TextButton",u5);a6.Size=UDim2.new(1,-6,0,23);a6.BackgroundColor3=Color3.fromRGB(35,35,35);a6.Text=z5.Name;a6.TextColor3=Color3.fromRGB(255,255,255);a6.Font=Enum.Font.Gotham;a6.TextSize=10;a6.ZIndex=44;Instance.new("UICorner",a6).CornerRadius=UDim.new(0,4);a6.MouseButton1Click:Connect(function()if E then D=z5 end end);y5=y5+26 end end;u5.CanvasSize=UDim2.new(0,0,0,math.max(y5,100))end;w5();local b6=Instance.new("TextLabel",t5);b6.Size=UDim2.new(0.85,0,0,16);b6.Position=UDim2.new(0.075,0,0,172);b6.BackgroundTransparency=1;b6.Text=D and("目标: "..D.Name)or"未选择目标";b6.TextColor3=Color3.fromRGB(255,255,100);b6.Font=Enum.Font.Gotham;b6.TextSize=9;b6.TextXAlignment=Enum.TextXAlignment.Center;b6.ZIndex=44 end
 local function c6()local d6=y1("🛡 防检测设置");d2(d6,"防检测",32,function()return l end,function()l=not l;w1()end);local e6=Instance.new("TextLabel",d6);e6.Size=UDim2.new(0.85,0,0,30);e6.Position=UDim2.new(0.075,0,0,70);e6.BackgroundTransparency=1;e6.Text="不限制飞行功能";e6.TextColor3=Color3.fromRGB(150,150,150);e6.Font=Enum.Font.Gotham;e6.TextSize=9;e6.TextXAlignment=Enum.TextXAlignment.Center;e6.ZIndex=44 end
@@ -27,25 +51,6 @@ local function findBTarget()
     end end
     return best
 end
-local function capitalize(str)return str:sub(1,1):upper()..str:sub(2)end
-local origNamecall=hookmetamethod(game,"__namecall",newcclosure(function(self,...)
-    local method=capitalize(getnamecallmethod())
-    if not checkcaller()and r and btTarget then
-        local args={...}
-        if self==workspace and method=="Raycast"then
-            local origin=args[1];local dir=(btTarget.Position-origin).Unit
-            args[2]=dir*(args[2]and args[2].Magnitude or 1000)
-            return origNamecall(self,unpack(args))
-        end
-    end
-    return origNamecall(self,...)
-end))
-local origRayNew=hookfunction(Ray.new,function(origin,dir)
-    if not checkcaller()and r and btTarget then
-        return origRayNew(origin,(btTarget.Position-origin).Unit*dir.Magnitude)
-    end
-    return origRayNew(origin,dir)
-end)
 local tpCount=0
 e.Stepped:Connect(function()if j and i and b then for _,m6 in ipairs(b:GetDescendants())do if m6:IsA("BasePart")and m6.CanCollide then m6.CanCollide=false end end end;healGod();if r then btTarget=findBTarget()else btTarget=nil end;if k then z=z+0.003;for _,n6 in ipairs(w)do if n6.h and n6.h.Parent then n6.h.OutlineColor=Color3.fromHSV(z%1,1,1)end;if n6.b and n6.b.Parent then local o6=n6.b:FindFirstChildOfClass("TextLabel");if o6 then o6.TextColor3=Color3.fromHSV(z%1,1,1)end end end end;y=y+1;if p and y>=3 then y=0;local p6=nil;local q6=x;for _,r6 in ipairs(game.Players:GetPlayers())do if r6~=a and not I(r6)and r6.Character and r6.Character:FindFirstChild("Head")and r6.Character:FindFirstChild("Humanoid")and r6.Character.Humanoid.Health>0 then local s6=r6.Character.Head;local t6=(s6.Position-g.CFrame.Position).Magnitude;if t6<q6 then q6=t6;p6=s6 end end end;if p6 then g.CFrame=CFrame.new(g.CFrame.Position,p6.Position)end end;if A1 and y>=2 then y=0;local u6=nil;local v6=A;local w6=g.CFrame.Position;for _,x6 in ipairs(game.Players:GetPlayers())do if x6~=a and not I(x6)and x6.Character and x6.Character:FindFirstChild("Head")and x6.Character:FindFirstChild("Humanoid")and x6.Character.Humanoid.Health>0 then local y6=x6.Character.Head;local z6=(Vector2.new(y6.Position.X,y6.Position.Z)-Vector2.new(w6.X,w6.Z)).Magnitude;local a7=(y6.Position-g.CFrame.Position).Magnitude;if z6<=A and a7<v6 then v6=a7;u6=y6 end end end;if u6 then local b7=u6.Position;local c7=g.CFrame.Position;local d7=(b7-c7);local e7=g.CFrame.Position+d7*0.08;g.CFrame=CFrame.new(e7,b7)end end;tpCount=tpCount+1;if E and D and D.Character and D.Character:FindFirstChild("HumanoidRootPart")and tpCount>=60 then tpCount=0;pcall(function()d.CFrame=CFrame.new(D.Character.HumanoidRootPart.Position+Vector3.new(0,3,0))end)end end)
 c.StateChanged:Connect(function(_,f7)if m and f7==Enum.HumanoidStateType.FallingDown then c.PlatformStand=true;wait(0.1);c.PlatformStand=false end end)
